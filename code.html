@@ -1,4 +1,5 @@
-`from machine import UART, Pin, PWM, ADC
+<code>
+from machine import UART, Pin, PWM, ADC
 import time
 
 bt = UART(0, 9600)
@@ -74,4 +75,5 @@ while True:
                     is_auto = True
                 elif 'connected' in cmd:
                     is_auto = False
-                cmd = ''`
+                cmd = ''
+</code>
