@@ -38,15 +38,83 @@
       
 
       <h1 id="urlloga">스마트 조명등 코드 - main.py</h1>
-      <img src='smart_light_main.py.png' id='main_img'>
-      <script>
-        var size = {
-          width: window.innerWidth || document.body.clientWidth,
-          height: window.innerHeight || document.body.clientHeight
-        };
-        var main_img = document.getElementById("main_img");
-        main_img.width = size.width;
-    </script>
+      <p>from machine import UART, Pin, PWM, ADC<br>
+import time<br>
+<br>
+bt = UART(0, 9600)<br>
+r = PWM(Pin(2))<br>
+g = PWM(Pin(3))<br>
+b = PWM(Pin(4))<br>
+cds = ADC(Pin(28))<br>
+<br>
+is_on = False<br>
+is_auto = False<br>
+cmd = ''<br>
+<br>
+c = [255, 255, 255]<br>
+<br>
+def on(p):<br>
+    p = p / 100<br>
+    r.duty_u16(int(c[0] / 255 * 65025 * p))<br>
+    g.duty_u16(int(c[1] / 255 * 65025 * p))<br>
+    b.duty_u16(int(c[2] / 255 * 65025 * p))<br>
+<br>
+def off():<br>
+    r.duty_u16(0)<br>
+    g.duty_u16(0)<br>
+    b.duty_u16(0)<br>
+    <br>
+def color(t):<br>
+    v = ''<br>
+    data = ''<br>
+    while not '!' in v:<br>
+        if bt.any():<br>
+            data = bt.readline()<br>
+            if not data == b'\x00':<br>
+                data = data.decode(('utf-8'))<br>
+                v += data<br>
+    print(t, v)<br>
+    try:<br>
+        c[t-1] = int(v[0:len(v)-1])<br>
+    except:<br>
+        pass<br>
+    if t < 3:<br>
+        color(t+1)<br>
+    else:<br>
+        print(c)<br>
+        print(is_on)<br>
+        if is_on:<br>
+            on(100)<br>
+    <br>
+while True:<br>
+    if is_on:<br>
+        if is_auto:<br>
+            on(int(cds.read_u16() / 65535 * 100))<br>
+            print('auto')<br>
+            time.sleep(0.5)<br>
+    if bt.any():<br>
+        data = bt.readline()<br>
+        if not data == b'\x00':<br>
+            data = data.decode(('utf-8'))<br>
+            print('received data:', data)<br>
+            cmd += data<br>
+            if '!' in cmd:<br>
+                print('cmd:', cmd)<br>
+                if 'on' in cmd:<br>
+                    is_on = True<br>
+                    on(100)<br>
+                elif 'off' in cmd:<br>
+                    is_on = False<br>
+                    off()<br>
+                elif 'color' in cmd:<br>
+                    color(1)<br>
+                elif 'noauto' in cmd:<br>
+                    is_auto = False<br>
+                elif 'auto' in cmd:<br>
+                    is_auto = True<br>
+                elif 'connected' in cmd:<br>
+                    is_auto = False<br>
+                cmd = ''</p>
 
       
     </div>
